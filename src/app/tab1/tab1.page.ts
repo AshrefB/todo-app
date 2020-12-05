@@ -1,4 +1,7 @@
+import { Router } from '@angular/router';
+import { AngularFireAuth } from '@angular/fire/auth';
 import { Component } from '@angular/core';
+import { AngularFireDatabase } from '@angular/fire/database';
 
 @Component({
   selector: 'app-tab1',
@@ -6,7 +9,64 @@ import { Component } from '@angular/core';
   styleUrls: ['tab1.page.scss']
 })
 export class Tab1Page {
+  currentUser = null;
+  currentDate = new Date();
+  addTask: boolean;
+  tasks = [];
+  myTask = '';
 
-  constructor() {}
+  constructor(
+    private afDB: AngularFireDatabase,
+    private fAuth: AngularFireAuth,
+    private router: Router
+  ) {
+    this.fAuth.onAuthStateChanged((user) => {
+      this.currentUser = user;
+      this.getTasks();
+    });
+  }
 
+  showForm() {
+    this.addTask = !this.addTask;
+    this.myTask = '';
+  }
+
+  addTaskToFirebase() {
+    this.afDB.list('Tasks/').push({
+      text: this.myTask,
+      date: new Date().toISOString(),
+      checked: false,
+      user: this.currentUser.email
+    });
+    this.showForm();
+  }
+
+  getTasks() {
+    this.afDB.list('Tasks/').snapshotChanges(['child_added', 'child_changed', 'child_removed']).subscribe(actions => {
+      this.tasks = [];
+      actions.forEach(action => {
+        if (action.payload.exportVal().user == this.currentUser?.email) {
+          this.tasks.push({
+            key: action.key,
+            text: action.payload.exportVal().text,
+            hour: action.payload.exportVal().date.substring(11, 16),
+            checked: action.payload.exportVal().checked
+          });
+        }
+      });
+    });
+  }
+
+  changeCheckState(ev: any) {
+    this.afDB.object('Tasks/' + ev.key + '/checked/').set(ev.checked);
+  }
+
+  deleteTask(task: any) {
+    this.afDB.list('Tasks/').remove(task.key);
+  }
+
+  logout() {
+    this.fAuth.signOut()
+      .then(() => this.router.navigate(['/login']));
+  }
 }

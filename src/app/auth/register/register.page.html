@@ -1,0 +1,53 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Register</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="bg-img">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="6" offset="3">
+          <ion-img style="width: 170px;" src="../../assets/auth.png"></ion-img>
+        </ion-col>
+      </ion-row>
+
+      <ion-card color="danger" *ngIf="isRegisterFailed">
+        <ion-card-content>
+          {{errorMsg}}
+        </ion-card-content>
+      </ion-card>
+
+      <form #f="ngForm" (submit)="f.form.valid && onSubmit(f)">
+        <ion-row>
+          <ion-col size-md="6" offset-md="3">
+            <ion-item>
+              <ion-label position="floating">Email</ion-label>
+              <ion-input clearInput type="email" name="email" ngModel #email required email></ion-input>
+            </ion-item><br>
+            <ion-item>
+              <ion-label position="floating">Password</ion-label>
+              <ion-input clearInput type="password" name="password" ngModel #password required min="6"></ion-input>
+            </ion-item><br>
+            <ion-item>
+              <ion-label position="floating">Confirm Password</ion-label>
+              <ion-input clearInput type="password" name="confirmmPassword" ngModel #confirmPassword required [pattern]="password.value"></ion-input>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+            <ion-button type="submit" color="danger" fill="solid" expand="block">
+              REGISTER
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </form>
+      
+    </ion-grid>
+  </div>
+</ion-content>
